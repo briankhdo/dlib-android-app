@@ -397,7 +397,7 @@ public class CameraConnectionFragment extends Fragment {
                 }
 
                 CameraConnectionFragment.this.cameraId = cameraId;
-                return;
+//                return;
             }
         } catch (final CameraAccessException e) {
             Log.e(TAG, "Exception!",  e);

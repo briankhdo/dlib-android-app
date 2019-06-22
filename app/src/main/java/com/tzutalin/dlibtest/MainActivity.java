@@ -231,14 +231,24 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Copy landmark model to " + targetPath, Toast.LENGTH_SHORT).show();
                 }
             });
-            FileUtils.copyFileFromRawToOthers(getApplicationContext(), R.raw.shape_predictor_68_face_landmarks, targetPath);
+            FileUtils.copyFileFromRawToOthers(getApplicationContext(), R.raw.shape_predictor_5_face_landmarks, targetPath);
+        }
+        final String netTargetPath = Constants.getNetModelPath();
+        if (!new File(netTargetPath).exists()) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Copy net model to " + netTargetPath, Toast.LENGTH_SHORT).show();
+                }
+            });
+            FileUtils.copyFileFromRawToOthers(getApplicationContext(), R.raw.shape_predictor_5_face_landmarks, netTargetPath);
         }
         // Init
         if (mPersonDet == null) {
             mPersonDet = new PedestrianDet();
         }
         if (mFaceDet == null) {
-            mFaceDet = new FaceDet(Constants.getFaceShapeModelPath());
+            mFaceDet = new FaceDet(Constants.getFaceShapeModelPath(), Constants.getNetModelPath());
         }
 
         Log.d(TAG, "Image path: " + imgPath);

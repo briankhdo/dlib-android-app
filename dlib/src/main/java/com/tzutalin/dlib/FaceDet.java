@@ -21,6 +21,7 @@ public class FaceDet {
     @SuppressWarnings("unused")
     private long mNativeFaceDetContext;
     private String mLandMarkPath = "";
+    private String mNetModelPath = "";
 
     static {
         try {
@@ -34,12 +35,13 @@ public class FaceDet {
 
     @SuppressWarnings("unused")
     public FaceDet() {
-        jniInit(mLandMarkPath);
+        jniInit(mLandMarkPath, mNetModelPath);
     }
 
-    public FaceDet(String landMarkPath) {
+    public FaceDet(String landMarkPath, String netModelPath) {
         mLandMarkPath = landMarkPath;
-        jniInit(mLandMarkPath);
+        mNetModelPath = netModelPath;
+        jniInit(mLandMarkPath, mNetModelPath);
     }
 
     @Nullable
@@ -70,7 +72,7 @@ public class FaceDet {
     private native static void jniNativeClassInit();
 
     @Keep
-    private synchronized native int jniInit(String landmarkModelPath);
+    private synchronized native int jniInit(String landmarkModelPath, String netModelPath);
 
     @Keep
     private synchronized native int jniDeInit();

@@ -39,6 +39,7 @@ import android.view.WindowManager;
 
 import com.tzutalin.dlib.Constants;
 import com.tzutalin.dlib.FaceDet;
+import com.tzutalin.dlib.FaceRec;
 import com.tzutalin.dlib.VisionDetRet;
 
 import junit.framework.Assert;
@@ -54,7 +55,7 @@ public class OnGetImageListener implements OnImageAvailableListener {
     private static final boolean SAVE_PREVIEW_BITMAP = false;
 
     private static final int NUM_CLASSES = 1001;
-    private static final int INPUT_SIZE = 224;
+    private static final int INPUT_SIZE = 400;
     private static final int IMAGE_MEAN = 117;
     private static final String TAG = "OnGetImageListener";
 
@@ -66,12 +67,14 @@ public class OnGetImageListener implements OnImageAvailableListener {
     private int[] mRGBBytes = null;
     private Bitmap mRGBframeBitmap = null;
     private Bitmap mCroppedBitmap = null;
+    private Bitmap mAlignedBitmap = null;
 
     private boolean mIsComputing = false;
     private Handler mInferenceHandler;
 
     private Context mContext;
     private FaceDet mFaceDet;
+    private FaceRec mFaceRec;
     private TrasparentTitleView mTransparentTitleView;
     private FloatingCameraWindow mWindow;
     private Paint mFaceLandmardkPaint;
@@ -84,7 +87,8 @@ public class OnGetImageListener implements OnImageAvailableListener {
         this.mContext = context;
         this.mTransparentTitleView = scoreView;
         this.mInferenceHandler = handler;
-        mFaceDet = new FaceDet(Constants.getFaceShapeModelPath());
+//        mFaceDet = new FaceDet(Constants.getFaceShapeModelPath(), Constants.getNetModelPath());
+        mFaceRec = new FaceRec(Constants.getModeslPath());
         mWindow = new FloatingCameraWindow(mContext);
 
         mFaceLandmardkPaint = new Paint();
@@ -97,6 +101,10 @@ public class OnGetImageListener implements OnImageAvailableListener {
         synchronized (OnGetImageListener.this) {
             if (mFaceDet != null) {
                 mFaceDet.release();
+            }
+
+            if (mFaceRec != null) {
+                mFaceRec.release();
             }
 
             if (mWindow != null) {
@@ -225,39 +233,42 @@ public class OnGetImageListener implements OnImageAvailableListener {
                     public void run() {
                         if (!new File(Constants.getFaceShapeModelPath()).exists()) {
                             mTransparentTitleView.setText("Copying landmark model to " + Constants.getFaceShapeModelPath());
-                            FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_68_face_landmarks, Constants.getFaceShapeModelPath());
+                            FileUtils.copyFileFromRawToOthers(mContext, R.raw.shape_predictor_5_face_landmarks, Constants.getFaceShapeModelPath());
+                        }
+
+                        if (!new File(Constants.getNetModelPath()).exists()) {
+                            mTransparentTitleView.setText("Copying net model to " + Constants.getNetModelPath());
+                            FileUtils.copyFileFromRawToOthers(mContext, R.raw.dlib_face_recognition_resnet_model_v1, Constants.getNetModelPath());
                         }
 
                         long startTime = System.currentTimeMillis();
-                        List<VisionDetRet> results;
+                        List<VisionDetRet> recResults;
                         synchronized (OnGetImageListener.this) {
-                            results = mFaceDet.detect(mCroppedBitmap);
+                            recResults = mFaceRec.detect(mCroppedBitmap);
                         }
+
+                        Log.d("dlib", "Recognize result: " + recResults.toString());
                         long endTime = System.currentTimeMillis();
                         mTransparentTitleView.setText("Time cost: " + String.valueOf((endTime - startTime) / 1000f) + " sec");
                         // Draw on bitmap
-                        if (results != null) {
-                            for (final VisionDetRet ret : results) {
+                        if (recResults != null) {
+                            for (final VisionDetRet ret : recResults) {
                                 float resizeRatio = 1.0f;
                                 Rect bounds = new Rect();
                                 bounds.left = (int) (ret.getLeft() * resizeRatio);
                                 bounds.top = (int) (ret.getTop() * resizeRatio);
                                 bounds.right = (int) (ret.getRight() * resizeRatio);
                                 bounds.bottom = (int) (ret.getBottom() * resizeRatio);
-                                Canvas canvas = new Canvas(mCroppedBitmap);
-                                canvas.drawRect(bounds, mFaceLandmardkPaint);
-
-                                // Draw landmark
-                                ArrayList<Point> landmarks = ret.getFaceLandmarks();
-                                for (Point point : landmarks) {
-                                    int pointX = (int) (point.x * resizeRatio);
-                                    int pointY = (int) (point.y * resizeRatio);
-                                    canvas.drawCircle(pointX, pointY, 2, mFaceLandmardkPaint);
+                                if (ret.alignedImagesSize() > 0) {
+                                    Bitmap image = ret.getAlignedImage(0);
+                                    mAlignedBitmap = image.copy(Bitmap.Config.ARGB_8888, true);
                                 }
                             }
                         }
 
-                        mWindow.setRGBBitmap(mCroppedBitmap);
+                        if (mAlignedBitmap != null) {
+                            mWindow.setRGBBitmap(mAlignedBitmap);
+                        }
                         mIsComputing = false;
                     }
                 });

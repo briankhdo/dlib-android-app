@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 26
     buildToolsVersion "${rootProject.ext.androidBuildToolsVersion}"
 
     defaultConfig {
         applicationId "com.tzutalin.dlibtest"
         minSdkVersion 21
-        targetSdkVersion 23
+        targetSdkVersion 26
         versionCode 1
         versionName "${rootProject.ext.releaseVersionName}"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -53,5 +53,8 @@ dependencies {
     androidTestCompile 'com.android.support.test:rules:0.5'
     // Optional -- Hamcrest library
     androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
+
+    // Build off of nightly TensorFlow Lite
+//    compile 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
 }
 apply plugin: 'com.jakewharton.hugo'

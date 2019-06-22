@@ -18,7 +18,19 @@ public final class Constants {
      */
     public static String getFaceShapeModelPath() {
         File sdcard = Environment.getExternalStorageDirectory();
-        String targetPath = sdcard.getAbsolutePath() + File.separator + "shape_predictor_68_face_landmarks.dat";
+        String targetPath = sdcard.getAbsolutePath() + File.separator + "shape_predictor_5_face_landmarks.dat";
+        return targetPath;
+    }
+
+    public static String getNetModelPath() {
+        File sdcard = Environment.getExternalStorageDirectory();
+        String targetPath = sdcard.getAbsolutePath() + File.separator + "dlib_face_recognition_resnet_model_v1.dat";
+        return targetPath;
+    }
+
+    public static String getModeslPath() {
+        File sdcard = Environment.getExternalStorageDirectory();
+        String targetPath = sdcard.getAbsolutePath();
         return targetPath;
     }
 }
